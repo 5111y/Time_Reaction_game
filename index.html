@@ -311,6 +311,38 @@
                 margin-top: 8px
             }
 
+            .measuring-indicator {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 5px;
+                height: 18px;
+                margin-top: 5px;
+                color: #7b918d;
+                font-size: 12px;
+                font-weight: 900;
+                opacity: 0;
+                transition: opacity .2s
+            }
+
+            .measuring-indicator.active { opacity: 1 }
+
+            .measuring-indicator span {
+                width: 5px;
+                height: 5px;
+                border-radius: 50%;
+                background: var(--green);
+                animation: measuringDot 1s infinite ease-in-out
+            }
+
+            .measuring-indicator span:nth-child(2) { animation-delay: .15s }
+            .measuring-indicator span:nth-child(3) { animation-delay: .3s }
+
+            @keyframes measuringDot {
+                0%, 60%, 100% { transform: scale(.7); opacity: .35 }
+                30% { transform: scale(1.35); opacity: 1 }
+            }
+
             .live {
                 font-size: clamp(54px,8vw,98px);
                 font-weight: 1000;
@@ -615,7 +647,8 @@
                         </div>
                         <div class="panel">
                             <div class="label">YOUR TIME</div>
-                            <div class="live" id="live">0.000</div>
+                            <div class="live measuring-value" id="live">???</div>
+                            <div class="measuring-indicator" id="measureIndicator" aria-hidden="true"><span></span><span></span><span></span><b>측정 중</b></div>
                             <div class="label">SEC</div>
                         </div>
                     </div>
@@ -749,7 +782,8 @@
                 cancelAnimationFrame(raf);
                 target = Number(rand(2, 9).toFixed(3));
                 $('target').textContent = target.toFixed(3);
-                $('live').textContent = '0.000';
+                $('live').textContent = '???';
+                $('measureIndicator').classList.remove('active');
                 $('g1btn').textContent = 'START';
                 $('g1res').classList.add('hide');
                 $('g1sub').textContent = '';
@@ -758,7 +792,7 @@
             }
             function loop1() {
                 const e = (performance.now() - start) / 1000;
-                $('live').textContent = e.toFixed(3);
+                $('live').textContent = '???';
                 raf = requestAnimationFrame(loop1)
             }
             function start1() {
@@ -773,10 +807,13 @@
                     state = 'run';
                     start = performance.now();
                     $('g1btn').textContent = 'STOP';
+                    $('live').textContent = '???';
+                    $('measureIndicator').classList.add('active');
                     setStatus('MEASURING');
                     loop1()
                 } else if (state === 'run') {
                     cancelAnimationFrame(raf);
+                    $('measureIndicator').classList.remove('active');
                     const e = (performance.now() - start) / 1000
                       , err = Math.abs(e - target);
                     g1score = scoreByError(err);
@@ -790,6 +827,7 @@
                     saveBest();
                     renderRecords();
                     $('live').textContent = e.toFixed(3);
+                    $('measureIndicator').classList.remove('active');
                     $('g1res').textContent = `오차 ${err.toFixed(3)}초`;
                     $('g1res').classList.remove('hide');
                     $('g1sub').textContent = 'RETRY로 다시 도전';
