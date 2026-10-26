@@ -780,14 +780,12 @@
                 raf = requestAnimationFrame(loop1)
             }
             function start1() {
-                if (state === 'idle' || state === 'done') {
-                    if (state === 'done') {
-                        target = Number(rand(2, 9).toFixed(3));
-                        $('target').textContent = target.toFixed(3);
-                        $('g1res').classList.add('hide');
-                        $('g1sub').textContent = '';
-                        $('live').textContent = '0.000'
-                    }
+                if (state === 'done') {
+                    // RETRY는 새 라운드 준비만 하고, 실제 시작은 START를 다시 눌러야 함
+                    init1();
+                    return;
+                }
+                if (state === 'idle') {
                     state = 'run';
                     start = performance.now();
                     $('g1btn').textContent = 'STOP';
@@ -874,10 +872,12 @@
                 $('reactionRecords').innerHTML = reactionRecords.slice(-6).map(r => `<div class="record ${r <= .35 ? 'good' : ''}">${r.toFixed(3)}초</div>`).join('')
             }
             function start2() {
-                if (state === 'idle' || state === 'done' || state === 'false') {
-                    if (state !== 'idle') {
-                        init2()
-                    }
+                if (state === 'done' || state === 'false') {
+                    // RETRY는 새 라운드 준비만 하고, 실제 시작은 START를 다시 눌러야 함
+                    init2();
+                    return;
+                }
+                if (state === 'idle') {
                     state = 'wait';
                     $('reaction').textContent = 'WAIT...';
                     $('reactionBox').className = 'reactionBox';
